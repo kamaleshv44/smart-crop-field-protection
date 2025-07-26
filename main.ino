@@ -1,6 +1,4 @@
-
-// Smart Crop Field Protection & Automated Irrigation - Arduino Sketch
-
+//This code is for security
 #include <SimpleDHT.h>
 #include <Wire.h>  // library for I2C protocol 
 #include <LiquidCrystal_I2C.h> // library for I2C LCD  
@@ -10,15 +8,12 @@ SoftwareSerial mySerial(9,10);
 char msg;
 char call;
 
-#define led 13 //Buzzer
-#define led1 7 //Water Pump
-#define led2 8 //fan
-#define led3 11 //Relay For teg Module
+#define led 13 // Buzzer
+#define led1 4 // Water Pump
 
-#define sensorpin A0 //Gas Sensor
-#define sensorpin1 A1 // Flame Sensor
-#define sensorpin2 A2 // Water Leakage sensor
-
+#define sensorpin A0 // LDR Sensor
+#define sensorpin1 A1 // IR Sensor
+#define sensorpin2 A2 // Moisture Sensor
 
 
 // for DHT11, 
@@ -45,17 +40,13 @@ void setup()
   lcd.clear();
   pinMode(led, OUTPUT);
   pinMode(led1, OUTPUT);
-  pinMode(led2, OUTPUT);
-  pinMode(led3, OUTPUT);
 
   pinMode(sensorpin, INPUT);
   pinMode(sensorpin1, INPUT);
   pinMode(sensorpin2, INPUT);
 
-  digitalWrite(led, LOW); //Buzzer
+  digitalWrite(led, LOW);
   digitalWrite(led1, LOW);
-  digitalWrite(led2, LOW);
-  digitalWrite(led3, HIGH);
 
 
  
@@ -87,92 +78,72 @@ void loop()
   lcd.print((int)humidity);
   delay(1000);
 
-if (temperature > 28)//Change the Temperature value
+
+
+if (digitalRead(sensorpin)==HIGH) // LDR Sensor
 {
   lcd.clear();
   lcd.setCursor(1,0);
-  lcd.print("HIGH Temp");
+  lcd.print("Alert Compound");
   digitalWrite(led, HIGH);
-  delay(500);
-  digitalWrite(led, LOW);
-  digitalWrite(led2, HIGH);
-  digitalWrite(led3, LOW); //Teg Module
-SendMessage();
-}
-
-if (temperature < 28)//Change the Temperature value
-{
-  digitalWrite(led2, LOW);
-  digitalWrite(led3, HIGH); //Teg module
-}
-
-
-if (digitalRead(sensorpin)==LOW) // Gas Sensor
-{
-  lcd.clear();
-  lcd.setCursor(1,0);
-  lcd.print("GAS LEAKAGE");
-  digitalWrite(led, HIGH);
-  delay(500);
-  digitalWrite(led, LOW);
-  digitalWrite(led2, HIGH);
   delay(3000);
-  digitalWrite(led2, LOW);
+  digitalWrite(led, LOW);
+  delay(2000);
+  lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print("Message Sent");
+  delay(2000);
+  lcd.clear();
+
+  SendMessage();
+}
+
+if (digitalRead(sensorpin)==LOW) // LDR Sensor
+{
+  digitalWrite(led, LOW);
+}
+
+if (digitalRead(sensorpin1)==LOW) // IR Sensor
+{
+  lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print("Alert Gate");
+  digitalWrite(led, HIGH);
+  delay(3000);
+  digitalWrite(led, LOW);
+  delay(2000);
+  lcd.clear();
+    lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print("Message Sent");
+  delay(2000);
   lcd.clear();
 
   SendMessage1();
 }
 
-/*
-if (digitalRead(sensorpin)==HIGH) // Gas Sensor
-{
-  digitalWrite(led2, LOW);
-}
-*/
 
-if (digitalRead(sensorpin1)==LOW) // Flame Sensor
+if (digitalRead(sensorpin2)==HIGH)// Moisture Sensor
 {
   lcd.clear();
   lcd.setCursor(1,0);
-  lcd.print("FIRE ALERT");
-  digitalWrite(led, HIGH);
-  delay(500);
-  digitalWrite(led, LOW);
+  lcd.print("LOW Moisture");
   digitalWrite(led1, HIGH);
   delay(3000);
   digitalWrite(led1, LOW);
+  delay(3000);
   lcd.clear();
-
+  lcd.setCursor(1,0);
+  lcd.print("Message Sent");
+  delay(2000);
+  lcd.clear();
   SendMessage2();
 }
 
-/*
-if (digitalRead(sensorpin1)==HIGH) // Flame Sensor
+if (digitalRead(sensorpin2)==LOW)// Moisture Sensor
 {
   digitalWrite(led1, LOW);
 }
-*/
-
-if (digitalRead(sensorpin2)==LOW)// Water Sensor
-{
-  lcd.clear();
-  lcd.setCursor(1,0);
-  lcd.print("WATER LEAKAGE");
-  digitalWrite(led, HIGH);
-  delay(500);
-  digitalWrite(led, LOW);
-  delay(3000);
-
-  lcd.clear();
-  SendMessage3();
-}
-
-/*
-if (digitalRead(sensorpin2)==HIGH) // Water Sensor
-{
-
-}
-*/
 
 }
 
@@ -181,10 +152,10 @@ void SendMessage()
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(1000);  // Delay of 1000 milli seconds or 1 second
 
-  mySerial.println("AT+CMGS=\"+91xxxxxxxxxx\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"+919448711910\"\r"); // Replace x with mobile number
   delay(1000);
 
-  mySerial.println("HIGH TEMPERATURE, Location: https://maps.app.goo.gl/yH3UmfdAGpFHh8bN6");// The SMS text you want to send
+  mySerial.println("ALERT SOME AT COMPOUND");// The SMS text you want to send
   delay(100);
    mySerial.println((char)26);// ASCII code of CTRL+Z
   delay(1000);
@@ -195,10 +166,10 @@ void SendMessage1()
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(1000);  // Delay of 1000 milli seconds or 1 second
 
-  mySerial.println("AT+CMGS=\"+91xxxxxxxxxx\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"+919448711910\"\r"); // Replace x with mobile number
   delay(1000);
 
-  mySerial.println("GAS LEAKAGE, Location: https://maps.app.goo.gl/yH3UmfdAGpFHh8bN6");// The SMS text you want to send
+  mySerial.println("ALERT SOME AT GATE");// The SMS text you want to send
   delay(100);
    mySerial.println((char)26);// ASCII code of CTRL+Z
   delay(1000);
@@ -209,24 +180,10 @@ void SendMessage2()
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(1000);  // Delay of 1000 milli seconds or 1 second
 
-  mySerial.println("AT+CMGS=\"+91xxxxxxxxxx\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"+919448711910\"\r"); // Replace x with mobile number
   delay(1000);
 
-  mySerial.println("FIRE ALERT, Location: https://maps.app.goo.gl/yH3UmfdAGpFHh8bN6");// The SMS text you want to send
-  delay(100);
-   mySerial.println((char)26);// ASCII code of CTRL+Z
-  delay(1000);
-}
-
-void SendMessage3()
-{
-  mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
-  delay(1000);  // Delay of 1000 milli seconds or 1 second
-
-  mySerial.println("AT+CMGS=\"+91xxxxxxxxxx\"\r"); // Replace x with mobile number
-  delay(1000);
-
-  mySerial.println("WATER LEAKAGE, Location: https://maps.app.goo.gl/yH3UmfdAGpFHh8bN6");// The SMS text you want to send
+  mySerial.println("LOW MOISTURE");// The SMS text you want to send
   delay(100);
    mySerial.println((char)26);// ASCII code of CTRL+Z
   delay(1000);
