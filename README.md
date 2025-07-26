@@ -23,7 +23,7 @@ This project is an IoT-based smart irrigation system designed to automate water 
 The system continuously checks soil moisture. If the soil is dry, it activates the water pump. If an obstacle is detected (like an animal or human), a buzzer is triggered to scare it away.
 
 **Circuit Diagram:**  
-(Placeholder for the circuit diagram)
+circuit diagram available in 'circuit_diagram' image file.
 
 **Code:**  
 The Arduino code is available in `main.ino` file.
