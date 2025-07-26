@@ -1,0 +1,189 @@
+#include <SimpleDHT.h>
+#include <Wire.h>  // library for I2C protocol 
+#include <LiquidCrystal_I2C.h> // library for I2C LCD  
+LiquidCrystal_I2C lcd(0x27,16,2); // set the LCD address to 0x27 for a 16 chars and 2 line display 
+#include <SoftwareSerial.h>
+SoftwareSerial mySerial(9,10);
+char msg;
+char call;
+
+#define led 13 // Buzzer
+#define led1 4 // Water Pump
+
+#define sensorpin A0 // LDR Sensor
+#define sensorpin1 A1 // IR Sensor
+#define sensorpin2 A2 // Moisture Sensor
+
+
+// for DHT11, 
+//      VCC: 5V or 3V
+//      GND: GND
+//      DATA: 16
+int pinDHT11 = 12; // Humidity
+SimpleDHT11 dht11(pinDHT11);
+
+
+void setup() 
+{
+  mySerial.begin(9600);   // Setting the baud rate of GSM Module  
+  Serial.begin(9600);// Setting the baud rate of Serial Monitor (Arduino)
+  lcd.init();
+  lcd.backlight(); // backlight ON 
+  lcd.setCursor(0,0); 
+  lcd.print("Smart");  
+  lcd.setCursor(2,1);  
+  lcd.print("Monitoring"); 
+  // put your setup code here, to run once:
+ 
+  delay(1000);
+  lcd.clear();
+  pinMode(led, OUTPUT);
+  pinMode(led1, OUTPUT);
+
+  pinMode(sensorpin, INPUT);
+  pinMode(sensorpin1, INPUT);
+  pinMode(sensorpin2, INPUT);
+
+  digitalWrite(led, LOW);
+  digitalWrite(led1, LOW);
+
+
+ 
+
+}
+
+void loop() 
+{
+
+// start working...
+  Serial.println("=================================");
+  Serial.println("Sample DHT11...");
+  
+  // read without samples.
+  byte temperature = 0;
+  byte humidity = 0;
+  int err = SimpleDHTErrSuccess;
+  if ((err = dht11.read(&temperature, &humidity, NULL)) != SimpleDHTErrSuccess) {
+    Serial.print("Read DHT11 failed, err="); Serial.println(err);delay(1000);
+    return;
+  }
+
+  // Turn on the blacklight and print a message.
+  lcd.backlight();
+  lcd.setCursor(0,0);
+  lcd.print("Tempature  "); lcd.print((int)temperature);
+  lcd.setCursor(0, 1);
+  lcd.print("Humidity  ");
+  lcd.print((int)humidity);
+  delay(1000);
+
+
+
+if (digitalRead(sensorpin)==HIGH) // LDR Sensor
+{
+  lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print("Alert Compound");
+  digitalWrite(led, HIGH);
+  delay(3000);
+  digitalWrite(led, LOW);
+  delay(2000);
+  lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print("Message Sent");
+  delay(2000);
+  lcd.clear();
+
+  SendMessage();
+}
+
+if (digitalRead(sensorpin)==LOW) // LDR Sensor
+{
+  digitalWrite(led, LOW);
+}
+
+if (digitalRead(sensorpin1)==LOW) // IR Sensor
+{
+  lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print("Alert Gate");
+  digitalWrite(led, HIGH);
+  delay(3000);
+  digitalWrite(led, LOW);
+  delay(2000);
+  lcd.clear();
+    lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print("Message Sent");
+  delay(2000);
+  lcd.clear();
+
+  SendMessage1();
+}
+
+
+if (digitalRead(sensorpin2)==HIGH)// Moisture Sensor
+{
+  lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print("LOW Moisture");
+  digitalWrite(led1, HIGH);
+  delay(3000);
+  digitalWrite(led1, LOW);
+  delay(3000);
+  lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print("Message Sent");
+  delay(2000);
+  lcd.clear();
+  SendMessage2();
+}
+
+if (digitalRead(sensorpin2)==LOW)// Moisture Sensor
+{
+  digitalWrite(led1, LOW);
+}
+
+}
+
+void SendMessage()
+{
+  mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
+  delay(1000);  // Delay of 1000 milli seconds or 1 second
+
+  mySerial.println("AT+CMGS=\"+919448711910\"\r"); // Replace x with mobile number
+  delay(1000);
+
+  mySerial.println("ALERT SOME AT COMPOUND");// The SMS text you want to send
+  delay(100);
+   mySerial.println((char)26);// ASCII code of CTRL+Z
+  delay(1000);
+}
+
+void SendMessage1()
+{
+  mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
+  delay(1000);  // Delay of 1000 milli seconds or 1 second
+
+  mySerial.println("AT+CMGS=\"+919448711910\"\r"); // Replace x with mobile number
+  delay(1000);
+
+  mySerial.println("ALERT SOME AT GATE");// The SMS text you want to send
+  delay(100);
+   mySerial.println((char)26);// ASCII code of CTRL+Z
+  delay(1000);
+}
+
+void SendMessage2()
+{
+  mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
+  delay(1000);  // Delay of 1000 milli seconds or 1 second
+
+  mySerial.println("AT+CMGS=\"+919448711910\"\r"); // Replace x with mobile number
+  delay(1000);
+
+  mySerial.println("LOW MOISTURE");// The SMS text you want to send
+  delay(100);
+   mySerial.println((char)26);// ASCII code of CTRL+Z
+  delay(1000);
+}
