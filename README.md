@@ -20,7 +20,7 @@ This project is an IoT-based smart irrigation system designed to automate water 
 - Low power consumption design
 
 **How it Works:**  
-The system continuously checks soil moisture. If the soil is dry, it activates the water pump. If an obstacle is detected (like an animal or human), a buzzer is triggered to scare it away.
+The system continuously checks soil moisture. If the soil is dry, it activates the water pump. If an obstacle is detected (like an animal or human), a buzzer is triggered to scare it away and send a alert message to the owner of the filed via sms.
 
 **Circuit Diagram:**  
 circuit diagram available in 'circuit_diagram' image file.
